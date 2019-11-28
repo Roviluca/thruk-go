@@ -2,13 +2,12 @@ package thruk
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"gotest.tools/assert"
 	"net/http"
 	"testing"
-	"time"
 )
 
 const omdTestUserName string = "omdadmin"
@@ -48,11 +47,17 @@ func startThrukContainer(t *testing.T) string {
 }
 func testCallError(t *testing.T, err error, respCode int) {
 	t.Helper()
-	if err != nil {
-		t.Error(err)
-	}
+	testError(t, err, nil)
 	if respCode != http.StatusOK {
 		t.Errorf("Expected status code %d. Got %d.", http.StatusOK, respCode)
+	}
+}
+
+func testError(t *testing.T, got error, want error) {
+	t.Helper()
+	if got != want {
+		fmt.Printf("Got error %s, wanted %s", got, want)
+		t.Error(got)
 	}
 }
 func Test_container_up_and_running(t *testing.T) {
@@ -81,7 +86,7 @@ func Test_thruk_client(t *testing.T) {
 		skip_ssl_check := true
 		thruk := newThruk(URL, "", "", skip_ssl_check)
 
-		resp, err := thruk.GetURL(fmt.Sprintf("%s:%s", URL, ""))
+		resp, err := thruk.GetURL("")
 		testCallError(t, err, resp.StatusCode)
 	})
 	t.Run("Can login with basic auth and list API root path", func(t *testing.T) {
@@ -89,43 +94,32 @@ func Test_thruk_client(t *testing.T) {
 		skip_ssl_check := true
 		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
 
-		resp, err := thruk.GetURL(fmt.Sprintf("%s%s", URL, "/demo/thruk/r/"))
+		resp, err := thruk.GetURL("/demo/thruk/r/")
 		testCallError(t, err, resp.StatusCode)
 	})
-}
+	t.Run("Can get a config object from id", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skip_ssl_check := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
 
-type thruk struct {
-	URL      string
-	client   http.Client
-	username string
-	password string
-}
+		object, err := thruk.GetConfigObject("341d4")
+		testError(t, err, nil)
+		assert.DeepEqual(t, object, ConfigObject{
+			FILE:           "/omd/sites/demo/etc/naemon/conf.d/thruk_templates.cfg:53",
+			ID:             "341d4",
+			PEERKEY:        "48f1c",
+			READONLY:       0,
+			TYPE:           "timeperiod",
+			Alias:          "24 Hours A Day, 7 Days A Week",
+			Friday:         "00:00-24:00",
+			Monday:         "00:00-24:00",
+			Saturday:       "00:00-24:00",
+			Sunday:         "00:00-24:00",
+			Thursday:       "00:00-24:00",
+			TimeperiodName: "thruk_24x7",
+			Tuesday:        "00:00-24:00",
+			Wednesday:      "00:00-24:00",
+		})
 
-func (t thruk) GetURL(URL string) (*http.Response, error) {
-	req,err  := http.NewRequest("GET",t.URL,nil)
-	if err != nil {
-		fmt.Errorf("Error: %s", err)
-	}
-	req.SetBasicAuth(t.username,t.password)
-	resp, err := t.client.Do(req)
-	if err != nil {
-		fmt.Errorf("Error: %s", err)
-	}
-	return resp, err
-}
-func newThruk(URL, username, password string, skipTLS bool) thruk {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: skipTLS,
-		},
-	}
-	return thruk{
-		URL: URL,
-		client: http.Client{
-			Transport: tr,
-			Timeout:   15 * time.Second,
-		},
-		username: username,
-		password: password,
-	}
+	})
 }

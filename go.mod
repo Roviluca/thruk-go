@@ -9,4 +9,5 @@ require (
 	github.com/onsi/ginkgo v1.8.0
 	github.com/testcontainers/testcontainers-go v0.0.8
 	golang.org/x/text v0.3.0
+	gotest.tools v0.0.0-20181223230014-1083505acf35
 )
