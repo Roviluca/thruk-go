@@ -3,10 +3,13 @@ package thruk
 import (
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"time"
 )
+
+var errorInvalidInput = errors.New("[ERROR] invalid input")
 
 type thruk struct {
 	URL      string
@@ -86,9 +89,12 @@ func (t thruk) GetURL(URL string) (*http.Response, error) {
 	return resp, err
 }
 
-func (t thruk) GetConfigObject(s string) (object ConfigObject, err error) {
+func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	var configObjects []ConfigObject
-	resp, err := t.GetURL("/demo/thruk/r/config/objects?:ID=341d4")
+	if id == "" {
+		return object, errorInvalidInput
+	}
+	resp, err := t.GetURL("/demo/thruk/r/config/objects?:ID=" + id)
 	defer resp.Body.Close()
 	failOnError(err)
 

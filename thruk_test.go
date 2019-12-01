@@ -97,6 +97,15 @@ func Test_thruk_client(t *testing.T) {
 		resp, err := thruk.GetURL("/demo/thruk/r/")
 		testCallError(t, err, resp.StatusCode)
 	})
+	t.Run("Can't get a config object of empty id and returns error", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skip_ssl_check := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
+
+		object, err := thruk.GetConfigObject("")
+		testError(t, err, errorInvalidInput)
+		assert.DeepEqual(t, object, ConfigObject{})
+	})
 	t.Run("Can get a config object from id", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skip_ssl_check := true
