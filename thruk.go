@@ -1,21 +1,30 @@
 package thruk
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"time"
 )
 
 var errorInvalidInput = errors.New("[ERROR] invalid input")
+var errorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
 
 type thruk struct {
 	URL      string
 	client   http.Client
 	username string
 	password string
+}
+
+type thrukResponse struct {
+	Count   int            `json:"count"`
+	Message string         `json:"message"`
+	Objects []ConfigObject `json:"objects"`
 }
 
 type ConfigObject struct {
@@ -89,6 +98,23 @@ func (t thruk) GetURL(URL string) (*http.Response, error) {
 	return resp, err
 }
 
+func (t thruk) PostURL(URL string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("POST", t.URL+URL, body)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+		return nil, err
+	}
+	req.SetBasicAuth(t.username, t.password)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := t.client.Do(req)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+		return nil, err
+	}
+
+	return resp, err
+}
+
 func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	var configObjects []ConfigObject
 	if id == "" {
@@ -102,6 +128,26 @@ func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	failOnError(err)
 
 	return configObjects[0], nil
+}
+
+func (t thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
+	if object.FILE == "" || object.TYPE == "" {
+		return "", errorNeedFileAndType
+	}
+
+	bodyBytes, _ := json.Marshal(object)
+	body := bytes.NewReader(bodyBytes)
+	resp, err := t.PostURL("/demo/thruk/r/config/objects/", body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode >= 400 {
+		return "", errors.New(resp.Status)
+	}
+
+	thrukResp := thrukResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&thrukResp)
+	return thrukResp.Objects[0].ID, err
 }
 
 func failOnError(err error) {

@@ -1,8 +1,12 @@
 SKIP 1. curl service in http 
-2. Test that is possible to curl the service in https with test container
-3. authenticate against service
-4. list all configObjects
-5. list one config object by id
-6. create one object
-7. update one object
-8. delete one object
+-[x] Test that is possible to curl the service in https with test container
+-[x] authenticate against service
+-[x] ensure that get with empty id returns error
+-[x] list one config object by id
+-[x] Return error when trying to create object without :FILE and :TYPE (mandatory fields)
+-[x] create one object
+-[ ] a created object must persist ( be saved )
+-[ ] update one object
+-[ ] a updated object must persist ( be saved )
+-[ ] delete one object
+-[ ] a deleted object must persist ( be saved )

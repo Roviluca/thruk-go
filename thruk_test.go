@@ -47,30 +47,14 @@ func startThrukContainer(t *testing.T) string {
 }
 func testCallError(t *testing.T, err error, respCode int) {
 	t.Helper()
-	testError(t, err, nil)
+	assert.NilError(t, err)
 	if respCode != http.StatusOK {
 		t.Errorf("Expected status code %d. Got %d.", http.StatusOK, respCode)
 	}
 }
 
-func testError(t *testing.T, got error, want error) {
-	t.Helper()
-	if got != want {
-		fmt.Printf("Got error %s, wanted %s", got, want)
-		t.Error(got)
-	}
-}
 func Test_container_up_and_running(t *testing.T) {
 	t.Run("Test_container_up_and_running_with_authentication", func(t *testing.T) {
-		URL := startThrukContainer(t)
-
-		client := newClient()
-
-		resp, err := client.Get(fmt.Sprintf("%s:%s", URL, ""))
-		testCallError(t, err, resp.StatusCode)
-	})
-
-	t.Run("Test_container_up_and_running2", func(t *testing.T) {
 		URL := startThrukContainer(t)
 
 		client := newClient()
@@ -83,36 +67,39 @@ func Test_container_up_and_running(t *testing.T) {
 func Test_thruk_client(t *testing.T) {
 	t.Run("Can contact thruk service successfully.", func(t *testing.T) {
 		URL := startThrukContainer(t)
-		skip_ssl_check := true
-		thruk := newThruk(URL, "", "", skip_ssl_check)
+		skipSslCheck := true
+		thruk := newThruk(URL, "", "", skipSslCheck)
 
 		resp, err := thruk.GetURL("")
 		testCallError(t, err, resp.StatusCode)
 	})
 	t.Run("Can login with basic auth and list API root path", func(t *testing.T) {
 		URL := startThrukContainer(t)
-		skip_ssl_check := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		resp, err := thruk.GetURL("/demo/thruk/r/")
 		testCallError(t, err, resp.StatusCode)
 	})
+}
+
+func Test_thruk_client_Get(t *testing.T) {
 	t.Run("Can't get a config object of empty id and returns error", func(t *testing.T) {
 		URL := startThrukContainer(t)
-		skip_ssl_check := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		object, err := thruk.GetConfigObject("")
-		testError(t, err, errorInvalidInput)
+		assert.Error(t, err, "[ERROR] invalid input")
 		assert.DeepEqual(t, object, ConfigObject{})
 	})
 	t.Run("Can get a config object from id", func(t *testing.T) {
 		URL := startThrukContainer(t)
-		skip_ssl_check := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skip_ssl_check)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		object, err := thruk.GetConfigObject("341d4")
-		testError(t, err, nil)
+		assert.NilError(t, err)
 		assert.DeepEqual(t, object, ConfigObject{
 			FILE:           "/omd/sites/demo/etc/naemon/conf.d/thruk_templates.cfg:53",
 			ID:             "341d4",
@@ -130,5 +117,49 @@ func Test_thruk_client(t *testing.T) {
 			Wednesday:      "00:00-24:00",
 		})
 
+	})
+}
+
+func Test_thruk_client_CreateConfigObject(t *testing.T) {
+	t.Run("returns error when FILE and TYPE are empty in object", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		_, err := thruk.CreateConfigObject(ConfigObject{})
+		assert.Error(t, err, "[ERROR] FILE and TYPE must not be empty")
+	})
+	t.Run("returns error if thruk returns error", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		_, err := thruk.CreateConfigObject(ConfigObject{
+			FILE: "asd.asd",
+			TYPE: "not_existent",
+		})
+		assert.Error(t, err, "500 Internal Server Error")
+	})
+	t.Run("returns nil error and ID", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		id, err := thruk.CreateConfigObject(ConfigObject{
+			FILE:    "test.cfg",
+			TYPE:    "host",
+			Name:    "localhost",
+			Alias:   "localhost",
+			Address: "127.0.0.1",
+		})
+		assert.NilError(t, err)
+		if id == "" {
+			t.Log("Create returned nil ID")
+			t.FailNow()
+		}
+		createdObject, err := thruk.GetConfigObject(id)
+		assert.NilError(t, err)
+
+		assert.Equal(t, id, createdObject.ID)
 	})
 }
