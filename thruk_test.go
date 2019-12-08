@@ -194,4 +194,28 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 		assert.DeepEqual(t, createdObject, ConfigObject{})
 
 	})
+	t.Run("objects must persists after save function has been called", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		id, err := thruk.CreateConfigObject(ConfigObject{
+			FILE:    "test.cfg",
+			TYPE:    "host",
+			Name:    "localhost",
+			Alias:   "localhost",
+			Address: "127.0.0.1",
+		})
+		assert.NilError(t, err)
+		if id == "" {
+			t.Log("Create returned nil ID")
+			t.FailNow()
+		}
+
+		err = thruk.SaveConfigs()
+		assert.NilError(t, err)
+		savedObject, err := thruk.GetConfigObject(id)
+		assert.NilError(t, err)
+		assert.DeepEqual(t, savedObject.ID, id)
+	})
 }

@@ -172,6 +172,17 @@ func (t thruk) DiscardConfigs() error {
 	return nil
 }
 
+func (t thruk) SaveConfigs() error {
+	resp, err := t.PostURL("/demo/thruk/r/config/save", nil)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("http response code %d", resp.StatusCode)
+	}
+	return nil
+}
+
 func failOnError(err error) {
 	if err != nil {
 		log.Fatalf("Error: %s", err)

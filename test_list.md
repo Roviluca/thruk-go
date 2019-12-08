@@ -6,7 +6,7 @@ SKIP 1. curl service in http
 -[x] Return error when trying to create object without :FILE and :TYPE (mandatory fields)
 -[x] create one object
 -[x] revert configs from disk should drop unsaved changes
--[ ] save funtion must persist staged data on disk
+-[x] save function must persist staged data on disk
 -[ ] a created object must persist ( be saved )
 -[ ] update one object
 -[ ] a updated object must persist ( be saved )
