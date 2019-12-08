@@ -138,7 +138,7 @@ func Test_thruk_client_CreateConfigObject(t *testing.T) {
 			FILE: "asd.asd",
 			TYPE: "not_existent",
 		})
-		assert.Error(t, err, "500 Internal Server Error")
+		assert.Error(t, err, "object not created")
 	})
 	t.Run("returns nil error and ID", func(t *testing.T) {
 		URL := startThrukContainer(t)
@@ -161,5 +161,37 @@ func Test_thruk_client_CreateConfigObject(t *testing.T) {
 		assert.NilError(t, err)
 
 		assert.Equal(t, id, createdObject.ID)
+	})
+}
+
+func Test_thruk_client_apply_operations(t *testing.T) {
+	t.Run("discard configs from disk should drop unsaved changes", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		id, err := thruk.CreateConfigObject(ConfigObject{
+			FILE:    "test.cfg",
+			TYPE:    "host",
+			Name:    "localhost",
+			Alias:   "localhost",
+			Address: "127.0.0.1",
+		})
+		assert.NilError(t, err)
+		if id == "" {
+			t.Log("Create returned nil ID")
+			t.FailNow()
+		}
+
+		createdObject, err := thruk.GetConfigObject(id)
+		assert.NilError(t, err)
+		assert.Equal(t, id, createdObject.ID)
+
+		err = thruk.DiscardConfigs()
+		assert.NilError(t, err)
+		createdObject, err = thruk.GetConfigObject(id)
+		assert.Error(t, err, "[ERROR] Config Object not found")
+		assert.DeepEqual(t, createdObject, ConfigObject{})
+
 	})
 }

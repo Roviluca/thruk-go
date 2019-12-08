@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 
 var errorInvalidInput = errors.New("[ERROR] invalid input")
 var errorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
+var errorObjectNotFound = errors.New("[ERROR] Config Object not found")
 
 type thruk struct {
 	URL      string
@@ -126,6 +128,9 @@ func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 
 	err = json.NewDecoder(resp.Body).Decode(&configObjects)
 	failOnError(err)
+	if len(configObjects) == 0 {
+		return ConfigObject{}, errorObjectNotFound
+	}
 
 	return configObjects[0], nil
 }
@@ -147,7 +152,24 @@ func (t thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 
 	thrukResp := thrukResponse{}
 	err = json.NewDecoder(resp.Body).Decode(&thrukResp)
+	if err != nil {
+		return "", err
+	}
+	if len(thrukResp.Objects) == 0 {
+		return "", errors.New("object not created")
+	}
 	return thrukResp.Objects[0].ID, err
+}
+
+func (t thruk) DiscardConfigs() error {
+	resp, err := t.PostURL("/demo/thruk/r/config/discard", nil)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("http response code %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func failOnError(err error) {
