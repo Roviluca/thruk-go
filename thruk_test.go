@@ -83,7 +83,7 @@ func Test_thruk_client(t *testing.T) {
 	})
 }
 
-func Test_thruk_client_Get(t *testing.T) {
+func Test_thruk_client_GetConfigObject(t *testing.T) {
 	t.Run("Can't get a config object of empty id and returns error", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
@@ -218,4 +218,13 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 		assert.NilError(t, err)
 		assert.DeepEqual(t, savedObject.ID, id)
 	})
+	t.Run("reload config function should return nil for success", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		err := thruk.ReloadConfigs()
+		assert.NilError(t, err)
+	})
+
 }

@@ -79,6 +79,12 @@ type ConfigObject struct {
 	FailurePredictionEnabled    string   `json:"failure_prediction_enabled,omitempty"`
 }
 
+type reloadResponse []struct {
+	Failed  bool   `json:"failed"`
+	Output  string `json:"output"`
+	PeerKey string `json:"peer_key"`
+}
+
 func newClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -179,6 +185,26 @@ func (t thruk) SaveConfigs() error {
 	}
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("http response code %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (t thruk) ReloadConfigs() error {
+	reloadResp := reloadResponse{}
+	resp, err := t.PostURL("/demo/thruk/r/config/reload", nil)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("http response code %d", resp.StatusCode)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&reloadResp)
+	if err != nil {
+		return err
+	}
+	if reloadResp[0].Failed {
+		return fmt.Errorf("reload failed %v", reloadResp)
 	}
 	return nil
 }
