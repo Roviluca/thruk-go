@@ -226,5 +226,40 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 		err := thruk.ReloadConfigs()
 		assert.NilError(t, err)
 	})
+}
+
+func Test_thruk_client_DeleteConfigObject(t *testing.T) {
+	t.Run("delete object must return nil error if object exists", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		id, _ := thruk.CreateConfigObject(ConfigObject{
+			FILE: "test.cfg",
+			TYPE: "host",
+		})
+		if id == "" {
+			t.Fatal("failed to create object")
+		}
+		err := thruk.DeleteConfigObject(id)
+		assert.NilError(t, err)
+	})
+	t.Run("delete object must remove an object that exists", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		id, _ := thruk.CreateConfigObject(ConfigObject{
+			FILE: "test.cfg",
+			TYPE: "host",
+		})
+		if id == "" {
+			t.Fatal("failed to create object")
+		}
+		thruk.DeleteConfigObject(id)
+		thruk.SaveConfigs()
+		_, err := thruk.GetConfigObject(id)
+		assert.Error(t, err, "[ERROR] Config Object not found")
+	})
 
 }

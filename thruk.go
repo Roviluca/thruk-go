@@ -85,6 +85,11 @@ type reloadResponse []struct {
 	PeerKey string `json:"peer_key"`
 }
 
+type deleteResponse struct {
+	Count   int    `json:"count"`
+	Message string `json:"message"`
+}
+
 func newClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -205,6 +210,34 @@ func (t thruk) ReloadConfigs() error {
 	}
 	if reloadResp[0].Failed {
 		return fmt.Errorf("reload failed %v", reloadResp)
+	}
+	return nil
+}
+
+func (t thruk) DeleteConfigObject(id string) error {
+	URL := "/demo/thruk/r/config/objects/" + id
+	err := t.DeleteURL(URL)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t thruk) DeleteURL(URL string) error {
+	req, err := http.NewRequest("DELETE", t.URL+URL, nil)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+		return err
+	}
+	req.SetBasicAuth(t.username, t.password)
+	resp, err := t.client.Do(req)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+		return err
+	}
+	if resp.StatusCode >= 400 {
+		return errors.New(resp.Status)
 	}
 	return nil
 }

@@ -8,7 +8,8 @@ SKIP 1. curl service in http
 -[x] revert configs from disk should drop unsaved changes
 -[x] save function must persist staged data on disk
 -[x] reload config function should return nil for success
--[ ] delete one object
+-[x] delete object must return nil error if object exists
+-[x] delete object remove an early created object
 -[ ] update one object
 -[ ] a created object must persist ( be saved )
 -[ ] a updated object must persist ( be saved )
