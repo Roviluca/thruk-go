@@ -247,13 +247,13 @@ func failOnError(err error) {
 		log.Fatalf("Error: %s", err)
 	}
 }
-func NewThruk(URL, username, password string, skipTLS bool) Thruk {
+func NewThruk(URL, username, password string, skipTLS bool) *Thruk {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipTLS,
 		},
 	}
-	return Thruk{
+	return &Thruk{
 		URL: URL,
 		client: http.Client{
 			Transport: tr,
