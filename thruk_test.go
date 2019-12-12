@@ -68,7 +68,7 @@ func Test_thruk_client(t *testing.T) {
 	t.Run("Can contact thruk service successfully.", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, "", "", skipSslCheck)
+		thruk := NewThruk(URL, "", "", skipSslCheck)
 
 		resp, err := thruk.GetURL("")
 		testCallError(t, err, resp.StatusCode)
@@ -76,7 +76,7 @@ func Test_thruk_client(t *testing.T) {
 	t.Run("Can login with basic auth and list API root path", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		resp, err := thruk.GetURL("/demo/thruk/r/")
 		testCallError(t, err, resp.StatusCode)
@@ -87,7 +87,7 @@ func Test_thruk_client_GetConfigObject(t *testing.T) {
 	t.Run("Can't get a config object of empty id and returns error", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		object, err := thruk.GetConfigObject("")
 		assert.Error(t, err, "[ERROR] invalid input")
@@ -96,7 +96,7 @@ func Test_thruk_client_GetConfigObject(t *testing.T) {
 	t.Run("Can get a config object from id", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		object, err := thruk.GetConfigObject("341d4")
 		assert.NilError(t, err)
@@ -124,7 +124,7 @@ func Test_thruk_client_CreateConfigObject(t *testing.T) {
 	t.Run("returns error when FILE and TYPE are empty in object", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		_, err := thruk.CreateConfigObject(ConfigObject{})
 		assert.Error(t, err, "[ERROR] FILE and TYPE must not be empty")
@@ -132,7 +132,7 @@ func Test_thruk_client_CreateConfigObject(t *testing.T) {
 	t.Run("returns error if thruk returns error", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		_, err := thruk.CreateConfigObject(ConfigObject{
 			FILE: "asd.asd",
@@ -143,7 +143,7 @@ func Test_thruk_client_CreateConfigObject(t *testing.T) {
 	t.Run("returns nil error and ID", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		id, err := thruk.CreateConfigObject(ConfigObject{
 			FILE:    "test.cfg",
@@ -168,7 +168,7 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 	t.Run("discard configs from disk should drop unsaved changes", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		id, err := thruk.CreateConfigObject(ConfigObject{
 			FILE:    "test.cfg",
@@ -197,7 +197,7 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 	t.Run("objects must persists after save function has been called", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		id, err := thruk.CreateConfigObject(ConfigObject{
 			FILE:    "test.cfg",
@@ -221,7 +221,7 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 	t.Run("reload config function should return nil for success", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		err := thruk.ReloadConfigs()
 		assert.NilError(t, err)
@@ -232,7 +232,7 @@ func Test_thruk_client_DeleteConfigObject(t *testing.T) {
 	t.Run("delete object must return nil error if object exists", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		id, _ := thruk.CreateConfigObject(ConfigObject{
 			FILE: "test.cfg",
@@ -247,7 +247,7 @@ func Test_thruk_client_DeleteConfigObject(t *testing.T) {
 	t.Run("delete object must remove an object that exists", func(t *testing.T) {
 		URL := startThrukContainer(t)
 		skipSslCheck := true
-		thruk := newThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
 
 		id, _ := thruk.CreateConfigObject(ConfigObject{
 			FILE: "test.cfg",
