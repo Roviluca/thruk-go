@@ -16,7 +16,7 @@ var errorInvalidInput = errors.New("[ERROR] invalid input")
 var errorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
 var errorObjectNotFound = errors.New("[ERROR] Config Object not found")
 
-type thruk struct {
+type Thruk struct {
 	URL      string
 	client   http.Client
 	username string
@@ -98,7 +98,7 @@ func newClient() *http.Client {
 	return client
 }
 
-func (t thruk) GetURL(URL string) (*http.Response, error) {
+func (t Thruk) GetURL(URL string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", t.URL+URL, nil)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
@@ -111,7 +111,7 @@ func (t thruk) GetURL(URL string) (*http.Response, error) {
 	return resp, err
 }
 
-func (t thruk) PostURL(URL string, body io.Reader) (*http.Response, error) {
+func (t Thruk) PostURL(URL string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest("POST", t.URL+URL, body)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
@@ -128,7 +128,7 @@ func (t thruk) PostURL(URL string, body io.Reader) (*http.Response, error) {
 	return resp, err
 }
 
-func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
+func (t Thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	var configObjects []ConfigObject
 	if id == "" {
 		return object, errorInvalidInput
@@ -146,7 +146,7 @@ func (t thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	return configObjects[0], nil
 }
 
-func (t thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
+func (t Thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 	if object.FILE == "" || object.TYPE == "" {
 		return "", errorNeedFileAndType
 	}
@@ -172,7 +172,7 @@ func (t thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 	return thrukResp.Objects[0].ID, err
 }
 
-func (t thruk) DiscardConfigs() error {
+func (t Thruk) DiscardConfigs() error {
 	resp, err := t.PostURL("/demo/thruk/r/config/discard", nil)
 	if err != nil {
 		return err
@@ -183,7 +183,7 @@ func (t thruk) DiscardConfigs() error {
 	return nil
 }
 
-func (t thruk) SaveConfigs() error {
+func (t Thruk) SaveConfigs() error {
 	resp, err := t.PostURL("/demo/thruk/r/config/save", nil)
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func (t thruk) SaveConfigs() error {
 	return nil
 }
 
-func (t thruk) ReloadConfigs() error {
+func (t Thruk) ReloadConfigs() error {
 	reloadResp := reloadResponse{}
 	resp, err := t.PostURL("/demo/thruk/r/config/reload", nil)
 	if err != nil {
@@ -214,7 +214,7 @@ func (t thruk) ReloadConfigs() error {
 	return nil
 }
 
-func (t thruk) DeleteConfigObject(id string) error {
+func (t Thruk) DeleteConfigObject(id string) error {
 	URL := "/demo/thruk/r/config/objects/" + id
 	err := t.DeleteURL(URL)
 	if err != nil {
@@ -224,7 +224,7 @@ func (t thruk) DeleteConfigObject(id string) error {
 	return nil
 }
 
-func (t thruk) DeleteURL(URL string) error {
+func (t Thruk) DeleteURL(URL string) error {
 	req, err := http.NewRequest("DELETE", t.URL+URL, nil)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
@@ -247,13 +247,13 @@ func failOnError(err error) {
 		log.Fatalf("Error: %s", err)
 	}
 }
-func NewThruk(URL, username, password string, skipTLS bool) thruk {
+func NewThruk(URL, username, password string, skipTLS bool) Thruk {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipTLS,
 		},
 	}
-	return thruk{
+	return Thruk{
 		URL: URL,
 		client: http.Client{
 			Transport: tr,
