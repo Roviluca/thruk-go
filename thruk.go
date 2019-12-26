@@ -90,6 +90,11 @@ type deleteResponse struct {
 	Message string `json:"message"`
 }
 
+type checkResponse []struct {
+	Failed bool   `json:"failed"`
+	Output string `json:"output"`
+}
+
 func newClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -240,6 +245,20 @@ func (t Thruk) DeleteURL(URL string) error {
 		return errors.New(resp.Status)
 	}
 	return nil
+}
+
+func (t Thruk) CheckConfig() bool {
+	checkResult := checkResponse{}
+
+	resp, err := t.PostURL("/demo/thruk/r/config/check", nil)
+	if err != nil {
+		return false
+	}
+	if resp.StatusCode != 200 {
+		return false
+	}
+	json.NewDecoder(resp.Body).Decode(&checkResult)
+	return !checkResult[0].Failed
 }
 
 func failOnError(err error) {

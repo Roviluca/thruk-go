@@ -10,6 +10,8 @@ SKIP 1. curl service in http
 -[x] reload config function should return nil for success
 -[x] delete object must return nil error if object exists
 -[x] delete object remove an early created object
+-[x] checkConfiguration should return true if the configuration saved is valid
+-[x] checkConfiguration should return false if the configuration saved is not valid
 -[ ] update one object
 -[ ] a created object must persist ( be saved )
 -[ ] a updated object must persist ( be saved )

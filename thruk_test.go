@@ -226,6 +226,31 @@ func Test_thruk_client_apply_operations(t *testing.T) {
 		err := thruk.ReloadConfigs()
 		assert.NilError(t, err)
 	})
+	t.Run("CheckConfig function should return true if saved configuration is valid", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		ok := thruk.CheckConfig()
+		assert.Assert(t, ok)
+
+	})
+	t.Run("CheckConfig function should return false if saved configuration is not valid", func(t *testing.T) {
+		URL := startThrukContainer(t)
+		skipSslCheck := true
+		thruk := NewThruk(URL, omdTestUserName, omdTestPassword, skipSslCheck)
+
+		if _, err := thruk.CreateConfigObject(ConfigObject{TYPE: "host", FILE: "xxx.cfg"}); err != nil {
+			t.Fatalf("Could not create object, error: %v", err)
+		}
+		if err := thruk.SaveConfigs(); err != nil {
+			t.Fatalf("Could not save object, error: %v", err)
+		}
+
+		ok := thruk.CheckConfig()
+		assert.Assert(t, !ok)
+
+	})
 }
 
 func Test_thruk_client_DeleteConfigObject(t *testing.T) {
