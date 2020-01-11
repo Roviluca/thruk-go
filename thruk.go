@@ -31,8 +31,8 @@ type thrukResponse struct {
 type ConfigObject struct {
 	FILE                        string        `json:":FILE"`
 	ID                          string        `json:":ID,omitempty"`
-	PEERKEY                     string        `json:":PEER_KEY"`
-	READONLY                    int           `json:":READONLY"`
+	PEERKEY                     string        `json:":PEER_KEY,omitempty"`
+	READONLY                    int           `json:":READONLY,omitempty"`
 	TYPE                        string        `json:":TYPE"`
 	CommandLine                 string        `json:"command_line,omitempty"`
 	CommandName                 string        `json:"command_name,omitempty"`
