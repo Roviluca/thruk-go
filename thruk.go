@@ -21,6 +21,7 @@ type Thruk struct {
 	client   http.Client
 	username string
 	password string
+	SiteName string
 }
 
 type thrukResponse struct {
@@ -161,7 +162,7 @@ func (t Thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	if id == "" {
 		return object, errorInvalidInput
 	}
-	resp, err := t.GetURL("/demo/thruk/r/config/objects?:ID=" + id)
+	resp, err := t.GetURL("/" + t.SiteName + "/thruk/r/config/objects?:ID=" + id)
 	defer resp.Body.Close()
 	failOnError(err)
 
@@ -181,7 +182,7 @@ func (t Thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 
 	bodyBytes, _ := json.Marshal(object)
 	body := bytes.NewReader(bodyBytes)
-	resp, err := t.PostURL("/demo/thruk/r/config/objects/", body)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/objects/", body)
 	if err != nil {
 		return "", err
 	}
@@ -201,7 +202,7 @@ func (t Thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 }
 
 func (t Thruk) DiscardConfigs() error {
-	resp, err := t.PostURL("/demo/thruk/r/config/discard", nil)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/discard", nil)
 	if err != nil {
 		return err
 	}
@@ -212,7 +213,7 @@ func (t Thruk) DiscardConfigs() error {
 }
 
 func (t Thruk) SaveConfigs() error {
-	resp, err := t.PostURL("/demo/thruk/r/config/save", nil)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/save", nil)
 	if err != nil {
 		return err
 	}
@@ -224,7 +225,7 @@ func (t Thruk) SaveConfigs() error {
 
 func (t Thruk) ReloadConfigs() error {
 	reloadResp := reloadResponse{}
-	resp, err := t.PostURL("/demo/thruk/r/config/reload", nil)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/reload", nil)
 	if err != nil {
 		return err
 	}
@@ -243,7 +244,7 @@ func (t Thruk) ReloadConfigs() error {
 }
 
 func (t Thruk) DeleteConfigObject(id string) error {
-	URL := "/demo/thruk/r/config/objects/" + id
+	URL := "/" + t.SiteName + "/thruk/r/config/objects/" + id
 	err := t.DeleteURL(URL)
 	if err != nil {
 		return err
@@ -273,7 +274,7 @@ func (t Thruk) DeleteURL(URL string) error {
 func (t Thruk) CheckConfig() bool {
 	checkResult := checkResponse{}
 
-	resp, err := t.PostURL("/demo/thruk/r/config/check", nil)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/check", nil)
 	if err != nil {
 		return false
 	}
@@ -289,14 +290,15 @@ func failOnError(err error) {
 		log.Fatalf("Error: %s", err)
 	}
 }
-func NewThruk(URL, username, password string, skipTLS bool) *Thruk {
+func NewThruk(URL, SiteName, username, password string, skipTLS bool) *Thruk {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipTLS,
 		},
 	}
 	return &Thruk{
-		URL: URL,
+		URL:      URL,
+		SiteName: SiteName,
 		client: http.Client{
 			Transport: tr,
 			Timeout:   15 * time.Second,
