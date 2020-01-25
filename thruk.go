@@ -80,7 +80,7 @@ type ConfigObject struct {
 	FlapDetectionOptions        []string `json:"flap_detection_options,omitempty"`
 	FreshnessThreshold          string   `json:"freshness_threshold,omitempty"`
 	HighFlapThreshold           string   `json:"high_flap_threshold,omitempty"`
-	HostName                    string   `json:"host_name,omitempty"`
+	HostName                    []string `json:"host_name,omitempty"`
 	Hostgroups                  []string `json:"hostgroups,omitempty"`
 	IconImage                   string   `json:"icon_image,omitempty"`
 	IconImageAlt                string   `json:"icon_image_alt,omitempty"`
