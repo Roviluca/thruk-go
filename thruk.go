@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-var errorInvalidInput = errors.New("[ERROR] invalid input")
-var errorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
-var errorObjectNotFound = errors.New("[ERROR] Config Object not found")
+var ErrorInvalidInput = errors.New("[ERROR] invalid input")
+var ErrorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
+var ErrorObjectNotFound = errors.New("[ERROR] Config Object not found")
 
 type Thruk struct {
 	URL      string
@@ -160,7 +160,7 @@ func (t Thruk) PostURL(URL string, body io.Reader) (*http.Response, error) {
 func (t Thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	var configObjects []ConfigObject
 	if id == "" {
-		return object, errorInvalidInput
+		return object, ErrorInvalidInput
 	}
 	resp, err := t.GetURL("/" + t.SiteName + "/thruk/r/config/objects?:ID=" + id)
 	defer resp.Body.Close()
@@ -169,7 +169,7 @@ func (t Thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 	err = json.NewDecoder(resp.Body).Decode(&configObjects)
 	failOnError(err)
 	if len(configObjects) == 0 {
-		return ConfigObject{}, errorObjectNotFound
+		return ConfigObject{}, ErrorObjectNotFound
 	}
 
 	return configObjects[0], nil
@@ -177,7 +177,7 @@ func (t Thruk) GetConfigObject(id string) (object ConfigObject, err error) {
 
 func (t Thruk) CreateConfigObject(object ConfigObject) (id string, err error) {
 	if object.FILE == "" || object.TYPE == "" {
-		return "", errorNeedFileAndType
+		return "", ErrorNeedFileAndType
 	}
 
 	bodyBytes, _ := json.Marshal(object)
