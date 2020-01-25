@@ -102,6 +102,7 @@ type ConfigObject struct {
 	ServiceNotificationOptions  []string `json:"service_notification_options,omitempty"`
 	ServiceNotificationPeriod   string   `json:"service_notification_period,omitempty"`
 	ServicegroupName            string   `json:"servicegroup_name,omitempty"`
+	Servicegroups               []string `json:"servicegroups,omitempty"`
 }
 
 type reloadResponse []struct {
