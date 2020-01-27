@@ -266,7 +266,6 @@ func Test_thruk_client_DeleteConfigObject(t *testing.T) {
 		thruk.DeleteConfigObject(id)
 		thruk.SaveConfigs()
 		_, err := thruk.GetConfigObject(id)
-		assert.Error(t, err, "[ERROR] Config Object not found")
+		assert.Error(t, err, "[ERROR] Object not found")
 	})
-
 }

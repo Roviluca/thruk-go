@@ -1,8 +1,12 @@
 package thruk
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 )
+
+var ErrorNeedFileTypeHost = errors.New("[ERROR] FILE, TYPE and Name must not be empty")
 
 type Host struct {
 	FILE                       string   `json:":FILE"`
@@ -75,4 +79,42 @@ func (t Thruk) GetHost(id string) (Host, error) {
 	}
 
 	return hosts[0], nil
+}
+
+func (t Thruk) CreateHost(host Host) (string, error) {
+	if host.FILE == "" || host.TYPE == "" {
+		return "", ErrorNeedFileTypeHost
+	}
+
+	bodyBytes, _ := json.Marshal(host)
+	body := bytes.NewReader(bodyBytes)
+	resp, err := t.PostURL("/"+t.SiteName+"/thruk/r/config/objects/", body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode >= 400 {
+		return "", errors.New(resp.Status)
+	}
+	defer resp.Body.Close()
+
+	thrukResp := thrukResponse{}
+	err = json.NewDecoder(resp.Body).Decode(&thrukResp)
+	if err != nil {
+		return "", err
+	}
+	if len(thrukResp.Objects) == 0 {
+		return "", errors.New("object not created")
+	}
+	return thrukResp.Objects[0].ID, err
+	return "", nil
+}
+
+func (t Thruk) DeleteHost(id string) error {
+	URL := "/" + t.SiteName + "/thruk/r/config/objects/" + id
+	err := t.DeleteURL(URL)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

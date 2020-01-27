@@ -30,9 +30,67 @@ func Test_thruk_client_GetConfigObject_Host(t *testing.T) {
 			Register:        "0",
 		})
 	})
-	//	t.Run("Create host returns error when FILE and TYPE are empty", func(t *testing.T) {})
-	//	t.Run("Create host returns error if thruk returns error", func(t *testing.T) {})
-	//	t.Run("Create host returns nil error and ID on success", func(t *testing.T) {})
-	//	t.Run("Delete host must return nil error if object exists", func(t *testing.T) {})
-	//	t.Run("Delete host must remove an object that exists", func(t *testing.T) {})
+	t.Run("Create host returns error when FILE, TYPE and Name are empty", func(t *testing.T) {
+		thruk := startThrukServerAndGetClient(t)
+
+		_, err := thruk.CreateHost(Host{})
+		assert.Error(t, err, "[ERROR] FILE, TYPE and Name must not be empty")
+	})
+	t.Run("Create host returns error if thruk returns error", func(t *testing.T) {
+		thruk := startThrukServerAndGetClient(t)
+
+		_, err := thruk.CreateHost(Host{
+			FILE: "asd.asd",
+			TYPE: "not_existent",
+		})
+		assert.Error(t, err, "object not created")
+	})
+	t.Run("Create host returns nil error and ID on success", func(t *testing.T) {
+		thruk := startThrukServerAndGetClient(t)
+
+		id, err := thruk.CreateHost(Host{
+			FILE:    "test.cfg",
+			TYPE:    "host",
+			Name:    "localhost",
+			Alias:   "localhost",
+			Address: "127.0.0.1",
+		})
+		assert.NilError(t, err)
+		if id == "" {
+			t.Log("Create returned nil ID")
+			t.FailNow()
+		}
+		createdObject, err := thruk.GetHost(id)
+		assert.NilError(t, err)
+
+		assert.Equal(t, id, createdObject.ID)
+	})
+	t.Run("Delete host must return nil error if object exists", func(t *testing.T) {
+		thruk := startThrukServerAndGetClient(t)
+
+		id, _ := thruk.CreateHost(Host{
+			FILE: "test.cfg",
+			TYPE: "host",
+		})
+		if id == "" {
+			t.Fatal("failed to create object")
+		}
+		err := thruk.DeleteConfigObject(id)
+		assert.NilError(t, err)
+	})
+	t.Run("Delete host must remove an object that exists", func(t *testing.T) {
+		thruk := startThrukServerAndGetClient(t)
+
+		id, _ := thruk.CreateHost(Host{
+			FILE: "test.cfg",
+			TYPE: "host",
+		})
+		if id == "" {
+			t.Fatal("failed to create object")
+		}
+		thruk.DeleteHost(id)
+		thruk.SaveConfigs()
+		_, err := thruk.GetHost(id)
+		assert.Error(t, err, "[ERROR] Object not found")
+	})
 }

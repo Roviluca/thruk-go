@@ -14,7 +14,7 @@ import (
 
 var ErrorInvalidInput = errors.New("[ERROR] invalid input")
 var ErrorNeedFileAndType = errors.New("[ERROR] FILE and TYPE must not be empty")
-var ErrorObjectNotFound = errors.New("[ERROR] Config Object not found")
+var ErrorObjectNotFound = errors.New("[ERROR] Object not found")
 
 type Thruk struct {
 	URL      string
