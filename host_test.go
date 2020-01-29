@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_thruk_client_GetConfigObject_Host(t *testing.T) {
+func Test_thruk_client_crud_on_Host(t *testing.T) {
 	t.Run("Get host of empty id returns error", func(t *testing.T) {
 		thruk := startThrukServerAndGetClient(t)
 
@@ -75,7 +75,7 @@ func Test_thruk_client_GetConfigObject_Host(t *testing.T) {
 		if id == "" {
 			t.Fatal("failed to create object")
 		}
-		err := thruk.DeleteConfigObject(id)
+		err := thruk.DeleteHost(id)
 		assert.NilError(t, err)
 	})
 	t.Run("Delete host must remove an object that exists", func(t *testing.T) {
