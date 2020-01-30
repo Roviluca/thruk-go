@@ -26,7 +26,7 @@ func Test_thruk_client_Servicegroup(t *testing.T) {
 		})
 
 		if err != nil {
-			return
+			t.Errorf("Error creating object for read")
 		}
 
 		object, err := thruk.GetServicegroup(id)
